@@ -1,7 +1,8 @@
 let video;
 let handPose;
 let hands = [];
-let object;
+let objects = []; // Array para armazenar as bolas
+let objectPicked = []; // Array para armazenar o estado de "pegado" das bolas
 
 function preload() {
   handPose = ml5.handPose({ flipped: true });
@@ -11,9 +12,17 @@ function setup() {
   createCanvas(640, 480);
   video = createCapture(VIDEO, { flipped: true });
   video.hide();
-  
-  // Inicializando o objeto para pegar
-  object = createVector(random(width), random(height), 50); // Objeto posicionado aleatoriamente
+
+  // Inicializando 3 bolas
+  for (let i = 0; i < 3; i++) {
+    let newObj = {
+      position: createVector(random(width), random(height), 50),
+      picked: false
+    };
+    objects.push(newObj);
+    objectPicked.push(false);
+  }
+
   handPose.detectStart(video, gotHands);
 }
 
@@ -23,11 +32,15 @@ function gotHands(results) {
 
 function draw() {
   image(video, 0, 0);
-  
-  // Desenhando o objeto
-  fill(255, 0, 0);
-  ellipse(object.x, object.y, object.z, object.z);
-  
+
+  for (let i = 0; i < objects.length; i++) {
+    // Desenha as bolas que não foram "pegas"
+    if (!objects[i].picked) {
+      fill(255, 0, 0);
+      ellipse(objects[i].position.x, objects[i].position.y, objects[i].position.z, objects[i].position.z);
+    }
+  }
+
   let leftHandState = "Left: Not Detected";
   let rightHandState = "Right: Not Detected";
 
@@ -49,11 +62,12 @@ function draw() {
           rightHandState = `Right: ${state}`;
         }
 
-        // Verificando se a mão está próxima do objeto e se está fechada
-        if (state === "Closed" && isHandNearObject(hand, object)) {
-          // O objeto foi "pegado"
-          fill(0, 255, 0); // Mudando a cor do objeto para verde quando é "pegado"
-          ellipse(object.x, object.y, object.z, object.z); // Desenhando o objeto "pegado"
+        // Verificando se a mão está próxima das bolas e se está fechada
+        for (let i = 0; i < objects.length; i++) {
+          if (state === "Closed" && isHandNearObject(hand, objects[i].position) && !objects[i].picked) {
+            // Marca a bola como "pegada"
+            objects[i].picked = true;
+          }
         }
       }
     }
@@ -85,7 +99,7 @@ function isHandClosed(hand) {
   return fingersClosed >= 3;
 }
 
-// Função para verificar se a mão está próxima ao objeto
+// Função para verificar se a mão está próxima do objeto
 function isHandNearObject(hand, obj) {
   let handCenter = createVector(0, 0);
   for (let i = 0; i < hand.keypoints.length; i++) {
@@ -97,4 +111,15 @@ function isHandNearObject(hand, obj) {
   
   // Considerando que o objeto tem um tamanho de 50px e a mão precisa estar a menos de 100px do objeto
   return distance < 100 + obj.z / 2;
+}
+
+// Função para reiniciar as bolas
+function keyPressed() {
+  if (key === 'r' || key === 'R') {
+    // Resetando todas as bolas para posição aleatória e "desmarcando" o estado de "pegado"
+    for (let i = 0; i < objects.length; i++) {
+      objects[i].picked = false;
+      objects[i].position = createVector(random(width), random(height), 50); // Reposiciona as bolas aleatoriamente
+    }
+  }
 }
