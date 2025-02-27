@@ -1,18 +1,12 @@
 let video;
 let handPose;
 let hands = [];
-let painting;
-let px = 0;
-let py = 0;
-let sw = 8;
 
 function preload() {
-  // Initialize HandPose model with flipped video input
   handPose = ml5.handPose({ flipped: true });
 }
 
 function mousePressed() {
-  // Log detected hand data to the console
   console.log(hands);
 }
 
@@ -22,68 +16,63 @@ function gotHands(results) {
 
 function setup() {
   createCanvas(640, 480);
-
-  // Create an off-screen graphics buffer for painting
-  painting = createGraphics(640, 480);
-  painting.clear();
-
   video = createCapture(VIDEO, { flipped: true });
   video.hide();
 
-  // Start detecting hands
   handPose.detectStart(video, gotHands);
 }
 
 function draw() {
   image(video, 0, 0);
 
+  let leftHandState = "Left: Not Detected";
+  let rightHandState = "Right: Not Detected";
+
   if (hands.length > 0) {
-    let rightHand, leftHand;
-
-    // Separate detected hands into left and right
     for (let hand of hands) {
-      if (hand.handedness == "Right") {
-        let index = hand.index_finger_tip;
-        let thumb = hand.thumb_tip;
-        rightHand = { index, thumb };
+      if (hand.confidence > 0.1) {
+        for (let i = 0; i < hand.keypoints.length; i++) {
+          let keypoint = hand.keypoints[i];
+          fill(hand.handedness === "Left" ? [255, 0, 255] : [255, 255, 0]);
+          noStroke();
+          circle(keypoint.x, keypoint.y, 16);
+        }
+
+        let state = isHandClosed(hand) ? "Closed" : "Open";
+
+        if (hand.handedness === "Left") {
+          leftHandState = `Left: ${state}`;
+        } else {
+          rightHandState = `Right: ${state}`;
+        }
       }
-      if (hand.handedness == "Left") {
-        let index = hand.index_finger_tip;
-        let thumb = hand.thumb_tip;
-        leftHand = { index, thumb };
-      }
-    }
-
-    // Adjust stroke width based on left-hand pinch distance
-    if (leftHand) {
-      let { index, thumb } = leftHand;
-      let x = (index.x + thumb.x) * 0.5;
-      let y = (index.y + thumb.y) * 0.5;
-      sw = dist(index.x, index.y, thumb.x, thumb.y);
-
-      fill(255, 0, 255);
-      noStroke();
-      circle(x, y, sw);
-    }
-
-    // Draw with right-hand pinch
-    if (rightHand) {
-      let { index, thumb } = rightHand;
-      let x = (index.x + thumb.x) * 0.5;
-      let y = (index.y + thumb.y) * 0.5;
-
-      let d = dist(index.x, index.y, thumb.x, thumb.y);
-      if (d < 20) {
-        painting.stroke(255, 255, 0);
-        painting.strokeWeight(sw * 0.5);
-        painting.line(px, py, x, y);
-      }
-
-      px = x;
-      py = y;
     }
   }
 
-  // Overlay painting on top of the video
-  image(painting, 0, 0);
+  // Display hand states
+  fill(255);
+  textSize(24);
+  textAlign(LEFT, CENTER);
+  text(leftHandState, 20, height - 60);
+  text(rightHandState, 20, height - 30);
+
+  console.log(leftHandState, rightHandState);
+}
+
+// Function to determine if a hand is closed
+function isHandClosed(hand) {
+  let fingersClosed = 0;
+  let fingertips = [4, 8, 12, 16, 20];
+  let knuckles = [2, 5, 9, 13, 17];
+
+  for (let i = 0; i < fingertips.length; i++) {
+    let fingertip = hand.keypoints[fingertips[i]];
+    let knuckle = hand.keypoints[knuckles[i]];
+
+    if (fingertip.y > knuckle.y) {
+      fingersClosed++;
+    }
+  }
+
+  return fingersClosed >= 3;
 }
