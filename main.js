@@ -1,87 +1,162 @@
 let video;
 let handPose;
 let hands = [];
-let objects = []; // Array para armazenar as bolas
-let objectPicked = []; // Array para armazenar o estado de "pegado" das bolas
+let gameState = "loading"; // "loading", "menu", "playing"
+let fruits = [];
+let basket;
+let timer = 120;
+let trails = [];
+let grabbedFruit = null;
+let assetsLoaded = false;
 
 function preload() {
   handPose = ml5.handPose({ flipped: true });
-}
-
-function setup() {
-  createCanvas(640, 480);
-  video = createCapture(VIDEO, { flipped: true });
-  video.hide();
-
-  // Inicializando 3 bolas
-  for (let i = 0; i < 3; i++) {
-    let newObj = {
-      position: createVector(random(width), random(height), 50),
-      picked: false
-    };
-    objects.push(newObj);
-    objectPicked.push(false);
-  }
-
-  handPose.detectStart(video, gotHands);
 }
 
 function gotHands(results) {
   hands = results;
 }
 
+function setup() {
+  createCanvas(640, 480);
+  video = createCapture(VIDEO, { flipped: true });
+  video.hide();
+  handPose.detectStart(video, gotHands);
+
+  // Simulate asset loading
+  setTimeout(() => {
+    assetsLoaded = true;
+    gameState = "menu";
+  }, 2000);
+
+  basket = { x: width / 2, y: height - 50, w: 100, h: 50 };
+}
+
 function draw() {
+  background(0);
+
+  if (gameState === "loading") {
+    drawLoadingScreen();
+  } else if (gameState === "menu") {
+    drawMainMenu();
+  } else if (gameState === "playing") {
+    playGame();
+  }
+}
+
+function drawLoadingScreen() {
+  fill(255);
+  textSize(24);
+  textAlign(CENTER, CENTER);
+  text("Loading...", width / 2, height / 2);
+}
+
+function drawMainMenu() {
+  fill(255);
+  textSize(32);
+  textAlign(CENTER, CENTER);
+  text("Fruit Ninja Hand Game", width / 2, height / 3);
+
+  fill(100, 255, 100);
+  rect(width / 2 - 50, height / 2, 100, 50);
+  fill(0);
+  textSize(24);
+  text("Play", width / 2, height / 2 + 30);
+}
+
+function playGame() {
   image(video, 0, 0);
 
-  for (let i = 0; i < objects.length; i++) {
-    // Desenha as bolas que não foram "pegas"
-    if (!objects[i].picked) {
-      fill(255, 0, 0);
-      ellipse(objects[i].position.x, objects[i].position.y, objects[i].position.z, objects[i].position.z);
-    }
+  updateFruits();
+  drawFruits();
+  drawBasket();
+  updateTrails();
+  drawTrails();
+
+  handleHandDetection();
+
+  fill(255);
+  textSize(24);
+  textAlign(LEFT, TOP);
+  text("Time: " + nf(timer, 2) + "s", 10, 10);
+}
+
+function mousePressed() {
+  if (
+    gameState === "menu" &&
+    mouseX > width / 2 - 50 &&
+    mouseX < width / 2 + 50 &&
+    mouseY > height / 2 &&
+    mouseY < height / 2 + 50
+  ) {
+    gameState = "playing";
+    setInterval(() => {
+      if (timer > 0) timer--;
+    }, 1000);
   }
+}
 
-  let leftHandState = "Left: Not Detected";
-  let rightHandState = "Right: Not Detected";
-
+function handleHandDetection() {
   if (hands.length > 0) {
     for (let hand of hands) {
-      if (hand.confidence > 0.1) {
-        for (let i = 0; i < hand.keypoints.length; i++) {
-          let keypoint = hand.keypoints[i];
-          fill(hand.handedness === "Left" ? [255, 0, 255] : [255, 255, 0]);
-          noStroke();
-          circle(keypoint.x, keypoint.y, 16);
-        }
+      let isClosed = isHandClosed(hand);
+      let palm = hand.keypoints[0];
 
-        let state = isHandClosed(hand) ? "Closed" : "Open";
+      trails.push({ x: palm.x, y: palm.y, time: millis() });
 
-        if (hand.handedness === "Left") {
-          leftHandState = `Left: ${state}`;
-        } else {
-          rightHandState = `Right: ${state}`;
-        }
-
-        // Verificando se a mão está próxima das bolas e se está fechada
-        for (let i = 0; i < objects.length; i++) {
-          if (state === "Closed" && isHandNearObject(hand, objects[i].position) && !objects[i].picked) {
-            // Marca a bola como "pegada"
-            objects[i].picked = true;
+      if (isClosed) {
+        for (let fruit of fruits) {
+          if (dist(palm.x, palm.y, fruit.x, fruit.y) < 30) {
+            grabbedFruit = fruit;
           }
         }
+      } else {
+        grabbedFruit = null;
+      }
+
+      if (grabbedFruit) {
+        grabbedFruit.x = palm.x;
+        grabbedFruit.y = palm.y;
       }
     }
   }
-
-  // Display hand states
-  fill(255);
-  textSize(24);
-  textAlign(LEFT, CENTER);
-  text(leftHandState, 20, height - 60);
-  text(rightHandState, 20, height - 30);
 }
 
-// Função para verificar se a mão está fechada
+function updateFruits() {
+  if (frameCount % 60 === 0) {
+    fruits.push({ x: random(width), y: 0, w: 20, h: 20 });
+  }
+
+  for (let fruit of fruits) {
+    fruit.y += 2;
+  }
+}
+
+function drawFruits() {
+  fill(255, 0, 0);
+  for (let fruit of fruits) {
+    ellipse(fruit.x, fruit.y, fruit.w, fruit.h);
+  }
+}
+
+function drawBasket() {
+  fill(200, 150, 0);
+  rect(basket.x - basket.w / 2, basket.y, basket.w, basket.h);
+}
+
+function updateTrails() {
+  trails = trails.filter((t) => millis() - t.time < 500);
+}
+
+function drawTrails() {
+  noFill();
+  stroke(0, 255, 255, 100);
+  strokeWeight(5);
+  for (let t of trails) {
+    point(t.x, t.y);
+  }
+}
+
 function isHandClosed(hand) {
   let fingersClosed = 0;
   let fingertips = [4, 8, 12, 16, 20];
@@ -97,29 +172,4 @@ function isHandClosed(hand) {
   }
 
   return fingersClosed >= 3;
-}
-
-// Função para verificar se a mão está próxima do objeto
-function isHandNearObject(hand, obj) {
-  let handCenter = createVector(0, 0);
-  for (let i = 0; i < hand.keypoints.length; i++) {
-    handCenter.add(createVector(hand.keypoints[i].x, hand.keypoints[i].y));
-  }
-  handCenter.div(hand.keypoints.length); // Média da posição das keypoints
-
-  let distance = dist(handCenter.x, handCenter.y, obj.x, obj.y);
-  
-  // Considerando que o objeto tem um tamanho de 50px e a mão precisa estar a menos de 100px do objeto
-  return distance < 100 + obj.z / 2;
-}
-
-// Função para reiniciar as bolas
-function keyPressed() {
-  if (key === 'r' || key === 'R') {
-    // Resetando todas as bolas para posição aleatória e "desmarcando" o estado de "pegado"
-    for (let i = 0; i < objects.length; i++) {
-      objects[i].picked = false;
-      objects[i].position = createVector(random(width), random(height), 50); // Reposiciona as bolas aleatoriamente
-    }
-  }
 }
