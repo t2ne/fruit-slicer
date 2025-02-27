@@ -6,8 +6,9 @@ let fruits = [];
 let basket;
 let timer = 120;
 let trails = [];
-let grabbedFruit = null;
+let grabbedFruit = null;  // A fruta que está sendo arrastada
 let assetsLoaded = false;
+let counter = 0; // Contador de frutas "pegas"
 
 function preload() {
   handPose = ml5.handPose({ flipped: true });
@@ -79,6 +80,7 @@ function playGame() {
   textSize(24);
   textAlign(LEFT, TOP);
   text("Time: " + nf(timer, 2) + "s", 10, 10);
+  text("Fruits Caught: " + counter, 10, 40);
 }
 
 function mousePressed() {
@@ -104,44 +106,57 @@ function handleHandDetection() {
 
       trails.push({ x: palm.x, y: palm.y, time: millis() });
 
-      if (isClosed) {
+      // Verifica se o jogador está tentando pegar uma fruta com a mão fechada
+      if (isClosed && grabbedFruit === null) {
         for (let fruit of fruits) {
-          if (dist(palm.x, palm.y, fruit.x, fruit.y) < 30) {
+          if (dist(palm.x, palm.y, fruit.x, fruit.y) < 30 && !fruit.caught) {
             grabbedFruit = fruit;
+            grabbedFruit.offsetX = palm.x - fruit.x; // Guardar o deslocamento em X
+            grabbedFruit.offsetY = palm.y - fruit.y; // Guardar o deslocamento em Y
           }
         }
-      } else {
-        grabbedFruit = null;
+      } else if (!isClosed && grabbedFruit !== null) {
+        // Se a mão está aberta, "solta" a fruta
+        if (dist(grabbedFruit.x, grabbedFruit.y, basket.x, basket.y) < basket.w / 2) {
+          // Se a fruta for solta dentro do cesto, incrementa o contador
+          counter++;
+        }
+        grabbedFruit = null; // Soltar a fruta
       }
 
-      if (grabbedFruit) {
-        grabbedFruit.x = palm.x;
-        grabbedFruit.y = palm.y;
+      if (grabbedFruit !== null) {
+        // Se a fruta estiver sendo arrastada, atualiza a posição dela para a posição da mão
+        grabbedFruit.x = palm.x - grabbedFruit.offsetX;
+        grabbedFruit.y = palm.y - grabbedFruit.offsetY;
       }
     }
   }
 }
 
 function updateFruits() {
-  if (frameCount % 60 === 0) {
-    fruits.push({ x: random(width), y: 0, w: 20, h: 20 });
+  // Se o jogador não pegou nenhuma fruta, adicione uma nova fruta a cada 60 frames
+  if (frameCount % 60 === 0 && grabbedFruit === null) {
+    fruits.push({ x: random(width), y: 0, w: 20, h: 20, caught: false });
   }
 
+  // Atualiza a posição das frutas que estão caindo
   for (let fruit of fruits) {
-    fruit.y += 2;
+    if (!grabbedFruit || fruit !== grabbedFruit) {
+      fruit.y += 2;
+    }
   }
 }
 
 function drawFruits() {
   fill(255, 0, 0);
   for (let fruit of fruits) {
-    ellipse(fruit.x, fruit.y, fruit.w, fruit.h);
+    ellipse(fruit.x, fruit.y, fruit.w, fruit.h); // Desenha as frutas
   }
 }
 
 function drawBasket() {
   fill(200, 150, 0);
-  rect(basket.x - basket.w / 2, basket.y, basket.w, basket.h);
+  rect(basket.x - basket.w / 2, basket.y, basket.w, basket.h); // Desenha o cesto
 }
 
 function updateTrails() {
