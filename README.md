@@ -1,50 +1,96 @@
-# Fruit Catcher Game
+# Fruit Slicer 🍎
 
-A hand-gesture controlled fruit catching game built with p5.js and ml5.js.
+A gesture-controlled fruit catching game built with p5.js and ml5.js where players use hand movements to grab falling fruits and place them in a basket. Test your reflexes and coordination in this engaging interactive experience!
 
-## Requirements
+## 📍 Website
 
-The game requires the following libraries:
-- p5.js (main library)
-- p5.sound (for audio capabilities)
-- ml5.js (for hand tracking)
+- Play the game at: https://t2ne.eu/fruit-slicer
 
-## Sound Files
+## 🌟 Features
 
-Make sure the following sound files are available in the `assets/sound/` directory:
-- bg.mp3 - Background menu music
-- game.mp3 - Game music
-- fruitdrop.mp3 - Sound when a fruit is dropped
-- fruitgrab.mp3 - Sound when a fruit is grabbed
-- fruitinbasket.mp3 - Sound when a fruit is placed in the basket
-- button.mp3 - Button click sound
-- pause.mp3 - Pause sound
-- gameover.mp3 - Game over sound
-- win.mp3 - Game win sound
+- **Gesture Recognition**: Advanced hand tracking using ml5.js
+- **Dynamic Gameplay**: Catch falling fruits with natural hand movements
+- **Difficulty Levels**: Three challenge levels (Easy, Medium, Hard) with adjustable parameters
+- **Interactive UI**: Intuitive menu system with visual feedback
+- **Progress System**: Local leaderboard that tracks your best scores with difficulty indicators
+- **Audio System**: Dynamic sound effects and background music with adjustable volumes
+- **Pause System**: Fully functional pause menu activated with ESC key
 
-## Known Issues
+## 🎯 Gameplay
 
-If you encounter issues with sound not loading, make sure:
-1. Your browser allows autoplay of audio
-2. The p5.sound library is properly loaded
-3. All sound files exist in the correct location
+- Use your hand to catch falling fruits (camera required)
+- Close your hand to grab a fruit
+- Open your hand over the basket to release and score
+- Meet your quota before the timer runs out
+- Beat your previous high scores
+- Adjust difficulty to match your skill level
 
-## Controls
+## 🛠️ Technical Features
 
-- Use your hand to grab fruits (close your hand to grab)
-- Open your hand over the basket to drop the fruit
-- Click on buttons to navigate through menus
+- Built with p5.js for rendering and ml5.js for hand tracking
+- Real-time hand gesture recognition
+- Local storage for leaderboards and settings
+- Custom audio management system with volume controls
+- Responsive UI design with visual feedback
+- State management for different game screens
 
-## Features
+## 🎨 Game Screens
 
-- Hand gesture control
-- Different difficulty levels
-- Sound volume controls
-- High score leaderboard
+- **Loading Screen**: Handles initial asset loading
+- **Main Menu**: Game options and navigation
+- **Instructions Screen**: Explains game controls
+- **Objectives Screen**: Shows current goals based on difficulty
+- **Options Screen**: Customize game settings
+- **Gameplay Screen**: Main interactive environment
+- **Pause Screen**: In-game pause menu
+- **Game Over/Win Screens**: End game states with leaderboard display
 
-## Authors
+## 🎵 Audio
 
-t2ne - cyzuko
+The game features multiple audio elements:
+- Menu background music
+- Gameplay background music
+- Sound effects for interactions (grab, drop, score)
+- Win and lose sound effects
+- Button click sounds
+- Pause/resume sounds
+
+## ⚙️ Requirements
+
+- Modern browser with JavaScript enabled
+- Webcam access (for hand tracking)
+- p5.js and ml5.js libraries
+- p5.sound library for audio features
+
+## 🎮 Controls
+
+- **Hand Gestures**: Close hand to grab, open hand to release
+- **ESC Key**: Pause/resume game
+- **Mouse**: Navigate menus and UI elements
+
+## 🔧 Configuration
+
+The game includes several configurable options:
+- Difficulty levels (Easy, Medium, Hard)
+- Adjustable music and sound effect volumes
+- Leaderboard management
+
+## 🌐 Browser Support
+
+Tested and working on:
+- Chrome (recommended)
+- Firefox
+- Edge
+
+## 📱 Access Requirements
+
+- Desktop or laptop with webcam
+- Good lighting conditions for optimal hand tracking
+- Browser permissions for camera access
+
+## 🙋‍♂️ Authors
+
+t2ne/cyzuko - 2025
 
 <!-- Falta:
 - Habilitar o jogador para jogar com 2 mãos ou mais pra multiplayer
