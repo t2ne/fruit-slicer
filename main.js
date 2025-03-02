@@ -139,7 +139,7 @@ function updateFruits() {
     fruits.push({ x: random(width), y: 0, w: 20, h: 20, caught: false });
   }
 
-  // Atualiza a posição das frutas que estão caindo
+  // Atualiza a posição das frutas que estão a cair (teste)
   for (let fruit of fruits) {
     if (!grabbedFruit || fruit !== grabbedFruit) {
       fruit.y += 2;
