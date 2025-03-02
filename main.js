@@ -24,6 +24,8 @@ let fruitInBasketSound;
 let buttonClickSound;
 let pauseSound;
 let gameMusic;
+let gameOverSound;
+let gameWinSound;
 
 function preload() {
   handPose = ml5.handPose({ flipped: true });
@@ -35,13 +37,15 @@ function preload() {
   upheavalFont = loadFont("assets/font/upheavtt.ttf");
 
   // Load sounds
-  bgMusic = loadSound("assets/sounds/bg.mp3");
-  fruitDropSound = loadSound("assets/sounds/fruitdrop.mp3");
-  fruitGrabSound = loadSound("assets/sounds/fruitgrab.mp3");
-  fruitInBasketSound = loadSound("assets/sounds/fruitinbasket.mp3");
-  buttonClickSound = loadSound("assets/sounds/button.mp3");
-  pauseSound = loadSound("assets/sounds/pause.mp3");
-  gameMusic = loadSound("assets/sounds/game.mp3");
+  bgMusic = loadSound("assets/sound/bg.mp3");
+  fruitDropSound = loadSound("assets/sound/fruitdrop.mp3");
+  fruitGrabSound = loadSound("assets/sound/fruitgrab.mp3");
+  fruitInBasketSound = loadSound("assets/sound/fruitinbasket.mp3");
+  buttonClickSound = loadSound("assets/sound/button.mp3");
+  pauseSound = loadSound("assets/sound/pause.mp3");
+  gameMusic = loadSound("assets/sound/game.mp3");
+  gameOverSound = loadSound("assets/sound/gameover.mp3");
+  gameWinSound = loadSound("assets/sound/win.mp3");
 }
 
 function gotHands(results) {
