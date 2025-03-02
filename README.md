@@ -47,13 +47,10 @@ If you encounter issues with sound not loading, make sure:
 t2ne - cyzuko
 
 <!-- Falta:
-- Fix dos textos e cenas do género para ficar mais bonito
-- Mudar o 120s para minutos e segundos
+- Refazer o objective e instruções sem a drawSecondaryScreen (e depois eliminar isso)
+- Fix botões na objectiveScreen
 - Habilitar o jogador para jogar com 2 mãos ou mais pra multiplayer
-- Criar pauseMenu (ESC no jogo) e usar o som (maybe meter tmb por voz)
-- Pause Menu tenha opção de dar resume e sair do jogo
 - Usar assets para a fruta e para o basket
-- Melhorar detetaçãa das frutas e aumentar hitbox
-- Meter menos speed no dificil porque buga de vez em quando
+- Fix do bug em que a fruta dá freeze e nenhuma outra spawna
 - ...
  -->

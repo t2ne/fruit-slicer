@@ -5,6 +5,7 @@ let gameState = "loading";
 let fruits = [];
 let basket;
 let timer;
+let isPaused = false;
 let trails = [];
 let grabbedFruit = null;
 let grabbedFruitHand = null;
@@ -16,6 +17,7 @@ let fruitFrequency = 60;
 let quota = 30;
 let soundsLoaded = false;
 let gameJustEnded = false;
+let leaderboardWithDifficulty = [];
 
 let bgImage;
 let logoImage;
@@ -110,8 +112,8 @@ function updateDifficultySettings() {
       quota = 30;
       break;
     case "Difícil":
-      fruitSpeed = 3;
-      fruitFrequency = 40;
+      fruitSpeed = 2.5;
+      fruitFrequency = 45;
       quota = 40;
       break;
   }
@@ -234,7 +236,7 @@ function draw() {
       break;
     case "playing":
       if (soundsLoaded) {
-        if (!isSoundPlaying(gameMusic)) {
+        if (!isSoundPlaying(gameMusic) && !isPaused) {
           stopAllSounds();
           loopSoundSafe(gameMusic);
         }
@@ -293,6 +295,9 @@ function draw() {
       }
       drawConfirmClearScreen();
       break;
+    case "pauseMenu":
+      drawPauseMenuScreen();
+      break;
   }
 }
 
@@ -333,7 +338,7 @@ function drawMainMenu() {
   image(logoImage, width / 12, height / 8);
   pop();
 
-  let buttonY = height * 0.45;
+  let buttonY = height * 0.43;
   let buttonSpacing = 70;
 
   drawButton("Jogar", width / 2, buttonY, () => {
@@ -414,6 +419,8 @@ function drawButton(label, x, y, onClick) {
 }
 
 function drawInstructionsScreen() {
+  textAlign(CENTER, TOP);
+
   drawSecondaryScreen("Instruções", [
     "1. Usa as mãos para apanhar as frutas que caem",
     "2. Fecha a mão para agarrar uma fruta",
@@ -424,6 +431,8 @@ function drawInstructionsScreen() {
 }
 
 function drawObjectiveScreen() {
+  textAlign(CENTER, TOP);
+
   drawSecondaryScreen("Objetivo", [
     "apanha o maior número de frutas",
     "possível antes que o tempo acabe!",
@@ -467,12 +476,13 @@ function drawOptionsScreen() {
   textAlign(CENTER, TOP);
   text("Dificuldade:", width / 2, 100);
 
-  let buttonY = 150;
+  let buttonY = 180;
   let buttonWidth = 120;
   let buttonSpacing = 140;
 
   let easyX = width / 2 - buttonSpacing;
   let easySelected = difficulty === "Fácil";
+
   drawDifficultyButton(
     "Fácil",
     easyX,
@@ -520,23 +530,21 @@ function drawOptionsScreen() {
 
   textSize(26);
   textAlign(CENTER, TOP);
-  text("Volume:", width / 2, 220);
+  text("Volume:", width / 2, 240);
 
   textSize(20);
-  textAlign(RIGHT, CENTER);
-  text("Música:", width / 2 - 20, 270);
+  text("Música:", width / 2, 280);
 
   let sliderX = width / 2;
   let sliderWidth = 200;
-  drawSlider(sliderX, 270, sliderWidth, musicVolume, (value) => {
+  drawSlider(sliderX, 320, sliderWidth, musicVolume, (value) => {
     musicVolume = value;
     updateSoundVolumes();
   });
 
-  textAlign(RIGHT, CENTER);
-  text("Efeitos:", width / 2 - 20, 320);
+  text("Efeitos:", width / 2, 360);
 
-  drawSlider(sliderX, 320, sliderWidth, sfxVolume, (value) => {
+  drawSlider(sliderX, 400, sliderWidth, sfxVolume, (value) => {
     sfxVolume = value;
     updateSoundVolumes();
   });
@@ -742,9 +750,10 @@ function drawConfirmClearScreen() {
   fill(255);
   textSize(30);
   textAlign(CENTER, CENTER);
-  text("Tem a certeza que quer eliminar a pontuação?", width / 2, height / 3);
+  text("Tem a certeza que quer", width / 2, height / 3);
+  text("eliminar a pontuação?", width / 2, height / 3 + 40);
 
-  let buttonY = height / 2;
+  let buttonY = height / 2 + 50;
   let buttonSpacing = 100;
 
   drawButton("Sim", width / 2 - buttonSpacing, buttonY, () => {
@@ -760,7 +769,7 @@ function drawConfirmClearScreen() {
 }
 
 function clearLeaderboard() {
-  localStorage.removeItem("leaderboard");
+  localStorage.removeItem("leaderboardWithDiff");
   console.log("Leaderboard cleared");
 }
 
@@ -782,29 +791,59 @@ function displayLeaderboard() {
   } else {
     for (let i = 0; i < leaderboard.length; i++) {
       textAlign(CENTER, CENTER);
-      text(`${i + 1}. ${leaderboard[i]}`, width / 2, startY + i * 30);
+
+      let difficultyIndicator =
+        leaderboard[i].difficulty === "Fácil"
+          ? "(F) "
+          : leaderboard[i].difficulty === "Médio"
+          ? "(M) "
+          : "(D) ";
+      text(
+        `${i + 1}. ${difficultyIndicator}${leaderboard[i].score}`,
+        width / 2,
+        startY + i * 30
+      );
     }
   }
 }
 
 function getLeaderboard() {
   let leaderboard = [];
-  if (localStorage.getItem("leaderboard")) {
-    leaderboard = JSON.parse(localStorage.getItem("leaderboard"));
+  if (localStorage.getItem("leaderboardWithDiff")) {
+    leaderboard = JSON.parse(localStorage.getItem("leaderboardWithDiff"));
   }
 
   if (
     (gameState === "gameOver" || gameState === "gameWin") &&
     gameJustEnded === false
   ) {
-    let newLeaderboard = [...leaderboard];
-    newLeaderboard.push(counter);
-    newLeaderboard.sort((a, b) => b - a);
+    let newEntry = {
+      score: counter,
+      difficulty: difficulty,
+    };
 
-    let uniqueLeaderboard = [...new Set(newLeaderboard)];
+    let newLeaderboard = [...leaderboard];
+    newLeaderboard.push(newEntry);
+
+    newLeaderboard.sort((a, b) => b.score - a.score);
+
+    let uniqueLeaderboard = [];
+    let seen = new Set();
+
+    for (let entry of newLeaderboard) {
+      let key = `${entry.score}-${entry.difficulty}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniqueLeaderboard.push(entry);
+      }
+    }
+
     uniqueLeaderboard = uniqueLeaderboard.slice(0, 3);
 
-    localStorage.setItem("leaderboard", JSON.stringify(uniqueLeaderboard));
+    localStorage.setItem(
+      "leaderboardWithDiff",
+      JSON.stringify(uniqueLeaderboard)
+    );
 
     return uniqueLeaderboard;
   }
@@ -816,6 +855,7 @@ function resetGame() {
   fruits = [];
   timer = 120;
   counter = 0;
+  isPaused = false;
 
   grabbedFruit = null;
   grabbedFruitHand = null;
@@ -823,7 +863,7 @@ function resetGame() {
 
   if (window.timerInterval) clearInterval(window.timerInterval);
   window.timerInterval = setInterval(() => {
-    if (timer > 0 && gameState === "playing") {
+    if (timer > 0 && gameState === "playing" && !isPaused) {
       timer--;
       if (timer === 0) {
         endGame();
@@ -860,21 +900,51 @@ function mousePressed() {
   window.buttons = [];
 }
 
+function keyPressed() {
+  if (keyCode === 27) {
+    if (gameState === "playing") {
+      gameState = "pauseMenu";
+      isPaused = true;
+      if (soundsLoaded) {
+        pauseSound.play();
+        if (gameMusic.isPlaying()) {
+          gameMusic.pause();
+        }
+      }
+    } else if (gameState === "pauseMenu") {
+      gameState = "playing";
+      isPaused = false;
+      playSoundSafe(pauseSound);
+      if (soundsLoaded && !gameMusic.isPlaying()) {
+        gameMusic.loop();
+      }
+    }
+  }
+}
+
 function playGame() {
   image(video, 0, 0);
 
-  updateFruits();
+  if (!isPaused) {
+    updateFruits();
+  }
+
   drawFruits();
   drawBasket();
   updateTrails();
   drawTrails();
 
-  handleHandDetection();
+  if (!isPaused) {
+    handleHandDetection();
+  }
+
+  let minutes = Math.floor(timer / 60);
+  let seconds = timer % 60;
 
   fill(255);
   textSize(24);
   textAlign(LEFT, TOP);
-  text("Tempo: " + nf(timer, 2) + "s", 10, 10);
+  text(`Tempo: ${nf(minutes, 1)}m ${nf(seconds, 2)}s`, 10, 10);
   text("Fruta Apanhada: " + counter + "/" + quota, 10, 40);
   noStroke();
 }
@@ -891,7 +961,7 @@ function handleHandDetection() {
 
       if (isClosed && grabbedFruit === null) {
         for (let fruit of fruits) {
-          if (dist(palm.x, palm.y, fruit.x, fruit.y) < 30 && !fruit.caught) {
+          if (dist(palm.x, palm.y, fruit.x, fruit.y) < 40 && !fruit.caught) {
             grabbedFruit = fruit;
             grabbedFruitHand = handIndex;
             fruitSoundPlayed = true;
@@ -915,7 +985,7 @@ function handleHandDetection() {
       ) {
         if (
           dist(grabbedFruit.x, grabbedFruit.y, basket.x, basket.y) <
-          basket.w / 2
+          basket.w * 0.6
         ) {
           counter++;
           playSoundSafe(fruitInBasketSound);
@@ -929,6 +999,61 @@ function handleHandDetection() {
       }
     }
   }
+}
+
+function drawPauseMenuScreen() {
+  image(video, 0, 0);
+  drawFruits();
+  drawBasket();
+
+  fill(0, 0, 0, 180);
+  rect(0, 0, width, height);
+
+  fill(255);
+  textSize(40);
+  textAlign(CENTER, CENTER);
+  text("Jogo Pausado", width / 2, height / 3);
+
+  let buttonY = height * 0.6;
+  let buttonSpacing = 80;
+
+  drawButton("Voltar", width / 2, buttonY, () => {
+    playSoundSafe(pauseSound);
+    gameState = "playing";
+    isPaused = false;
+    if (soundsLoaded && !gameMusic.isPlaying()) {
+      gameMusic.loop();
+    }
+  });
+
+  drawButton("Sair", width / 2, buttonY + buttonSpacing, () => {
+    playSoundSafe(buttonClickSound);
+    gameState = "menu";
+    isPaused = false;
+    resetGame();
+  });
+
+  if (hands.length > 0) {
+    updateTrails();
+    drawTrails();
+  }
+}
+
+function isHandClosed(hand) {
+  let fingersClosed = 0;
+  let fingertips = [4, 8, 12, 16, 20];
+  let knuckles = [2, 5, 9, 13, 17];
+
+  for (let i = 0; i < fingertips.length; i++) {
+    let fingertip = hand.keypoints[fingertips[i]];
+    let knuckle = hand.keypoints[knuckles[i]];
+
+    if (fingertip.y > knuckle.y) {
+      fingersClosed++;
+    }
+  }
+
+  return fingersClosed >= 3;
 }
 
 function updateFruits() {
@@ -966,21 +1091,4 @@ function drawTrails() {
   for (let t of trails) {
     point(t.x, t.y);
   }
-}
-
-function isHandClosed(hand) {
-  let fingersClosed = 0;
-  let fingertips = [4, 8, 12, 16, 20];
-  let knuckles = [2, 5, 9, 13, 17];
-
-  for (let i = 0; i < fingertips.length; i++) {
-    let fingertip = hand.keypoints[fingertips[i]];
-    let knuckle = hand.keypoints[knuckles[i]];
-
-    if (fingertip.y > knuckle.y) {
-      fingersClosed++;
-    }
-  }
-
-  return fingersClosed >= 3;
 }
