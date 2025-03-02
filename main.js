@@ -419,30 +419,102 @@ function drawButton(label, x, y, onClick) {
 }
 
 function drawInstructionsScreen() {
+  // Background
+  tint(90, 90, 130);
+  image(bgImage, 0, 0, width, height);
+  noTint();
+
+  // Back button
+  image(backArrow, 20, 20, 40, 40);
+
+  // Back button click handler
+  if (!window.buttons) window.buttons = [];
+  window.buttons = [
+    {
+      x1: 20,
+      y1: 20,
+      x2: 60,
+      y2: 60,
+      onClick: () => {
+        playSoundSafe(buttonClickSound);
+        gameState = "menu";
+      },
+    },
+  ];
+
+  // Title
+  fill(255);
+  textSize(36);
+  textAlign(CENTER, TOP);
+  text("Instruções", width / 2, 30);
+
+  // Instructions content
+  textSize(22);
   textAlign(CENTER, TOP);
 
-  drawSecondaryScreen("Instruções", [
+  const instructions = [
     "1. Usa as mãos para apanhar as frutas que caem",
     "2. Fecha a mão para agarrar uma fruta",
     "3. Abre a mão sobre o cesto para soltar a fruta",
     "4. Tenta pegar no máximo de frutas possível",
     "5. Tens 2 minutos para jogar",
-  ]);
+    "6. Pressiona ESC para pausar o jogo",
+  ];
+
+  for (let i = 0; i < instructions.length; i++) {
+    text(instructions[i], width / 2, 120 + i * 40);
+  }
 }
 
 function drawObjectiveScreen() {
-  textAlign(CENTER, TOP);
+  // Background
+  tint(90, 90, 130);
+  image(bgImage, 0, 0, width, height);
+  noTint();
 
-  drawSecondaryScreen("Objetivo", [
-    "apanha o maior número de frutas",
+  // Back button
+  image(backArrow, 20, 20, 40, 40);
+
+  // Back button click handler
+  if (!window.buttons) window.buttons = [];
+  window.buttons = [
+    {
+      x1: 20,
+      y1: 20,
+      x2: 60,
+      y2: 60,
+      onClick: () => {
+        playSoundSafe(buttonClickSound);
+        gameState = "menu";
+      },
+    },
+  ];
+
+  // Title
+  fill(255);
+  textSize(36);
+  textAlign(CENTER, TOP);
+  text("Objetivo", width / 2, 30);
+
+  // Objective content
+  textSize(22);
+  textAlign(CENTER, CENTER);
+
+  const objectives = [
+    "Apanha o maior número de frutas",
     "possível antes que o tempo acabe!",
     "",
     "Cada fruta vale 1 ponto.",
     "",
     `Objetivo atual: ${quota} frutas (${difficulty})`,
     "",
-    "tenta superar o teu próprio recorde",
-  ]);
+    "Tenta superar o teu próprio recorde",
+  ];
+
+  let startY = 120;
+  for (let i = 0; i < objectives.length; i++) {
+    text(objectives[i], width / 2, startY + i * 35);
+  }
 }
 
 function drawOptionsScreen() {
@@ -560,8 +632,6 @@ function drawDifficultyButton(label, x, y, w, h, selected, onClick) {
   stroke(255);
   strokeWeight(2);
   rect(x - w / 2, y - h / 2, w, h, 5);
-
-  fill(255);
   textSize(20);
   textAlign(CENTER, CENTER);
   text(label, x, y);
@@ -599,39 +669,6 @@ function drawSlider(x, y, w, value, onChange) {
   ) {
     let newValue = constrain((mouseX - (x - w / 2)) / w, 0, 1);
     onChange(newValue);
-  }
-}
-
-function drawSecondaryScreen(title, textLines) {
-  tint(90, 90, 130);
-  image(bgImage, 0, 0, width, height);
-  noTint();
-
-  image(backArrow, 20, 20, 40, 40);
-
-  if (!window.buttons) window.buttons = [];
-  window.buttons = [
-    {
-      x1: 20,
-      y1: 20,
-      x2: 60,
-      y2: 60,
-      onClick: () => {
-        playSoundSafe(buttonClickSound);
-        gameState = "menu";
-      },
-    },
-  ];
-
-  fill(255);
-  textSize(36);
-  textAlign(CENTER, TOP);
-  text(title, width / 2, 30);
-
-  textSize(22);
-  textAlign(LEFT, TOP);
-  for (let i = 0; i < textLines.length; i++) {
-    text(textLines[i], width / 2 - 200, 120 + i * 40);
   }
 }
 
@@ -941,11 +978,17 @@ function playGame() {
   let minutes = Math.floor(timer / 60);
   let seconds = timer % 60;
 
-  fill(255);
-  textSize(24);
+  fill(0);
+  textSize(26);
+  strokeWeight(2);
+  stroke(255);
   textAlign(LEFT, TOP);
-  text(`Tempo: ${nf(minutes, 1)}m ${nf(seconds, 2)}s`, 10, 10);
-  text("Fruta Apanhada: " + counter + "/" + quota, 10, 40);
+  text(`Tempo: ${nf(minutes, 1)}m ${nf(seconds, 2)}s`, 10, 5);
+  text("Fruta Apanhada: " + counter + "/" + quota, 10, 35);
+
+  textSize(16);
+  text("ESC para pausar", 10, height - 25);
+
   noStroke();
 }
 

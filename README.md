@@ -47,10 +47,7 @@ If you encounter issues with sound not loading, make sure:
 t2ne - cyzuko
 
 <!-- Falta:
-- Refazer o objective e instruções sem a drawSecondaryScreen (e depois eliminar isso)
-- Fix botões na objectiveScreen
 - Habilitar o jogador para jogar com 2 mãos ou mais pra multiplayer
 - Usar assets para a fruta e para o basket
 - Fix do bug em que a fruta dá freeze e nenhuma outra spawna
-- ...
  -->
