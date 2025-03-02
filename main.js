@@ -16,6 +16,15 @@ let logoImage;
 let upheavalFont;
 let backArrow;
 
+//Sounds
+let bgMusic;
+let fruitDropSound;
+let fruitGrabSound;
+let fruitInBasketSound;
+let buttonClickSound;
+let pauseSound;
+let gameMusic;
+
 function preload() {
   handPose = ml5.handPose({ flipped: true });
 
@@ -24,6 +33,15 @@ function preload() {
   logoImage = loadImage("assets/icon/logo.png");
   backArrow = loadImage("assets/imgs/back_arrow.png");
   upheavalFont = loadFont("assets/font/upheavtt.ttf");
+
+  // Load sounds
+  bgMusic = loadSound("assets/sounds/bg.mp3");
+  fruitDropSound = loadSound("assets/sounds/fruitdrop.mp3");
+  fruitGrabSound = loadSound("assets/sounds/fruitgrab.mp3");
+  fruitInBasketSound = loadSound("assets/sounds/fruitinbasket.mp3");
+  buttonClickSound = loadSound("assets/sounds/button.mp3");
+  pauseSound = loadSound("assets/sounds/pause.mp3");
+  gameMusic = loadSound("assets/sounds/game.mp3");
 }
 
 function gotHands(results) {
@@ -203,7 +221,7 @@ function drawOptionsScreen() {
 
 function drawSecondaryScreen(title, textLines) {
   // Draw background with tint
-  tint(110, 110, 160);
+  tint(90, 90, 130);
   image(bgImage, 0, 0, width, height);
   noTint();
 
