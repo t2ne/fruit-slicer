@@ -91,9 +91,3 @@ Tested and working on:
 ## 🙋‍♂️ Authors
 
 t2ne/cyzuko - 2025
-
-<!-- Falta:
-- Habilitar o jogador para jogar com 2 mãos ou mais pra multiplayer
-- Usar assets para a fruta e para o basket
-- Fix do bug em que a fruta dá freeze e nenhuma outra spawna
- -->

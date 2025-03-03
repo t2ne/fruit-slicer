@@ -24,7 +24,7 @@ let logoImage;
 let upheavalFont;
 let backArrow;
 
-let cereja, kiwi, laranja, manga, melancia, morango, pera;
+let cereja, kiwi, laranja, manga, melancia, morango, pera, basketImg;
 
 let bgMusic;
 let fruitDropSound;
@@ -45,7 +45,7 @@ function preload() {
 
   try {
     bgImage = loadImage("assets/imgs/bg.png");
-    logoImage = loadImage("assets/icon/logo.png");
+    logoImage = loadImage("assets/imgs/logo.png");
     backArrow = loadImage("assets/imgs/back_arrow.png");
     upheavalFont = loadFont("assets/font/upheavtt.ttf");
 
@@ -57,11 +57,13 @@ function preload() {
     morango = loadImage("assets/imgs/fruits/morango.png");
     pera = loadImage("assets/imgs/fruits/pera.png");
 
+    basketImg = loadImage("assets/imgs/basket.png");
+
     if (typeof p5.prototype.loadSound === "function") {
       bgMusic = loadSound(
         "assets/sound/bg.mp3",
-        () => console.log("bgMusic loaded"),
-        (err) => console.error("Could not load bgMusic:", err)
+        () => console.log("Música de fundo carregada."),
+        (err) => console.error("Música de fundo não carregada:", err)
       );
       fruitDropSound = loadSound("assets/sound/fruitdrop.mp3");
       fruitGrabSound = loadSound("assets/sound/fruitgrab.mp3");
@@ -72,15 +74,13 @@ function preload() {
       gameOverSound = loadSound("assets/sound/gameover.mp3");
       gameWinSound = loadSound("assets/sound/win.mp3");
       soundsLoaded = true;
-      console.log("Sound files loading attempted");
+      console.log("Ficheiros carregados.");
     } else {
-      console.warn(
-        "p5.sound library is not available, sounds will be disabled"
-      );
+      console.warn("Libraria de som do p5 não carregada.");
       soundsLoaded = false;
     }
   } catch (e) {
-    console.error("Error loading assets:", e);
+    console.error("Erro ao carregar assets:", e);
 
     soundsLoaded = false;
   }
@@ -156,7 +156,7 @@ function updateSoundVolumes() {
     if (gameWinSound && typeof gameWinSound.setVolume === "function")
       gameWinSound.setVolume(sfxVolume);
   } catch (e) {
-    console.error("Error updating sound volumes:", e);
+    console.error("Erro ao atualizar volumes:", e);
   }
 }
 
@@ -165,7 +165,7 @@ function playSoundSafe(sound) {
     try {
       sound.play();
     } catch (e) {
-      console.error("Error playing sound:", e);
+      console.error("Erro ao tocar música:", e);
     }
   }
 }
@@ -175,7 +175,7 @@ function stopSoundSafe(sound) {
     try {
       sound.stop();
     } catch (e) {
-      console.error("Error stopping sound:", e);
+      console.error("Erro ao parar música:", e);
     }
   }
 }
@@ -185,7 +185,7 @@ function isSoundPlaying(sound) {
     try {
       return sound.isPlaying();
     } catch (e) {
-      console.error("Error checking if sound is playing:", e);
+      console.error("Erro ao ver se a música está a tocar:", e);
     }
   }
   return false;
@@ -196,7 +196,7 @@ function loopSoundSafe(sound) {
     try {
       sound.loop();
     } catch (e) {
-      console.error("Error looping sound:", e);
+      console.error("Erro a dar loop a música:", e);
     }
   }
 }
@@ -207,6 +207,7 @@ function gotHands(results) {
 
 function setup() {
   createCanvas(640, 480);
+  frameRate(60);
   video = createCapture(VIDEO, { flipped: true });
   video.hide();
   handPose.detectStart(video, gotHands);
@@ -225,7 +226,7 @@ function setup() {
     }
   }, 2000);
 
-  basket = { x: width / 2, y: height - 50, w: 100, h: 50 };
+  basket = { x: width / 2, y: height - 60, w: 120, h: 60 };
 }
 
 function draw() {
@@ -340,7 +341,7 @@ function drawLoadingScreen() {
 }
 
 function drawMainMenu() {
-  tint(90, 90, 130);
+  tint(60, 60, 90);
   image(bgImage, 0, 0, width, height);
   noTint();
 
@@ -430,7 +431,7 @@ function drawButton(label, x, y, onClick) {
 
 function drawInstructionsScreen() {
   // Background
-  tint(90, 90, 130);
+  tint(60, 60, 90);
   image(bgImage, 0, 0, width, height);
   noTint();
 
@@ -478,7 +479,7 @@ function drawInstructionsScreen() {
 
 function drawObjectiveScreen() {
   // Background
-  tint(90, 90, 130);
+  tint(60, 60, 90);
   image(bgImage, 0, 0, width, height);
   noTint();
 
@@ -528,7 +529,7 @@ function drawObjectiveScreen() {
 }
 
 function drawOptionsScreen() {
-  tint(90, 90, 130);
+  tint(60, 60, 90);
   image(bgImage, 0, 0, width, height);
   noTint();
 
@@ -774,7 +775,7 @@ function drawTryAgainButtons() {
 }
 
 function drawConfirmClearScreen() {
-  tint(90, 90, 130);
+  tint(60, 60, 90);
   image(bgImage, 0, 0, width, height);
   noTint();
 
@@ -817,7 +818,7 @@ function drawConfirmClearScreen() {
 
 function clearLeaderboard() {
   localStorage.removeItem("leaderboardWithDiff");
-  console.log("Leaderboard cleared");
+  console.log("Classificação limpa.");
 }
 
 function displayLeaderboard() {
@@ -976,8 +977,8 @@ function playGame() {
     updateFruits();
   }
 
-  drawFruits();
   drawBasket();
+  drawFruits();
   updateTrails();
   drawTrails();
 
@@ -1008,47 +1009,52 @@ function handleHandDetection() {
       let hand = hands[i];
       let handIndex = i;
       let isClosed = isHandClosed(hand);
-      let palm = hand.keypoints[0];
+      let palm = hand.keypoints[9];
 
       trails.push({ x: palm.x, y: palm.y, time: millis() });
 
-      if (isClosed && grabbedFruit === null) {
+      if (isClosed) {
+        let alreadyHolding = false;
         for (let fruit of fruits) {
-          if (dist(palm.x, palm.y, fruit.x, fruit.y) < 40 && !fruit.caught) {
-            grabbedFruit = fruit;
-            grabbedFruitHand = handIndex;
-            fruitSoundPlayed = true;
-            grabbedFruit.offsetX = palm.x - fruit.x;
-            grabbedFruit.offsetY = palm.y - fruit.y;
-            playSoundSafe(fruitGrabSound);
+          if (fruit.grabbed && fruit.grabbedBy === handIndex) {
+            alreadyHolding = true;
+            fruit.x = palm.x;
+            fruit.y = palm.y;
             break;
           }
         }
-      } else if (
-        isClosed &&
-        grabbedFruit !== null &&
-        handIndex === grabbedFruitHand
-      ) {
-        grabbedFruit.x = palm.x - grabbedFruit.offsetX;
-        grabbedFruit.y = palm.y - grabbedFruit.offsetY;
-      } else if (
-        !isClosed &&
-        grabbedFruit !== null &&
-        handIndex === grabbedFruitHand
-      ) {
-        if (
-          dist(grabbedFruit.x, grabbedFruit.y, basket.x, basket.y) <
-          basket.w * 0.6
-        ) {
-          counter++;
-          playSoundSafe(fruitInBasketSound);
-        } else {
-          playSoundSafe(fruitDropSound);
-        }
 
-        grabbedFruit = null;
-        grabbedFruitHand = null;
-        fruitSoundPlayed = false;
+        if (!alreadyHolding) {
+          for (let fruit of fruits) {
+            if (
+              !fruit.grabbed &&
+              dist(palm.x, palm.y, fruit.x, fruit.y) < fruit.w
+            ) {
+              fruit.grabbed = true;
+              fruit.grabbedBy = handIndex;
+              playSoundSafe(fruitGrabSound);
+              break;
+            }
+          }
+        }
+      } else {
+        for (let fruit of fruits) {
+          if (fruit.grabbed && fruit.grabbedBy === handIndex) {
+            if (dist(fruit.x, fruit.y, basket.x, basket.y) < basket.w * 0.6) {
+              counter++;
+              playSoundSafe(fruitInBasketSound);
+              let fruitIndex = fruits.indexOf(fruit);
+              if (fruitIndex > -1) {
+                fruits.splice(fruitIndex, 1);
+              }
+            } else {
+              playSoundSafe(fruitDropSound);
+              fruit.grabbed = false;
+              fruit.grabbedBy = null;
+            }
+            break;
+          }
+        }
       }
     }
   }
@@ -1110,27 +1116,51 @@ function isHandClosed(hand) {
 }
 
 function updateFruits() {
-  if (frameCount % fruitFrequency === 0 && grabbedFruit === null) {
-    fruits.push({ x: random(width), y: 0, w: 20, h: 20, caught: false });
+  if (frameCount % fruitFrequency === 0) {
+    const fruitImages = [cereja, kiwi, laranja, manga, melancia, morango, pera];
+    const randomFruitImg =
+      fruitImages[Math.floor(Math.random() * fruitImages.length)];
+    fruits.push({
+      x: random(50, width - 50),
+      y: 0,
+      w: 40,
+      h: 40,
+      caught: false,
+      img: randomFruitImg,
+      grabbed: false,
+      grabbedBy: null,
+    });
   }
 
-  for (let fruit of fruits) {
-    if (!grabbedFruit || fruit !== grabbedFruit) {
-      fruit.y += fruitSpeed;
+  for (let i = fruits.length - 1; i >= 0; i--) {
+    if (!fruits[i].grabbed) {
+      fruits[i].y += fruitSpeed;
+
+      if (fruits[i].y > height + 50) {
+        fruits.splice(i, 1);
+      }
     }
   }
 }
 
 function drawFruits() {
-  fill(255, 0, 0);
+  imageMode(CENTER);
   for (let fruit of fruits) {
-    ellipse(fruit.x, fruit.y, fruit.w, fruit.h);
+    image(fruit.img, fruit.x, fruit.y, fruit.w * 1.5, fruit.h * 1.5);
   }
+  imageMode(CORNER);
 }
 
 function drawBasket() {
-  fill(200, 150, 0);
-  rect(basket.x - basket.w / 2, basket.y, basket.w, basket.h);
+  imageMode(CENTER);
+  image(
+    basketImg,
+    basket.x,
+    basket.y + basket.h / 2,
+    basket.w * 1.2,
+    basket.h * 1.5
+  );
+  imageMode(CORNER);
 }
 
 function updateTrails() {
@@ -1139,9 +1169,11 @@ function updateTrails() {
 
 function drawTrails() {
   noFill();
-  stroke(0, 255, 255, 100);
-  strokeWeight(5);
-  for (let t of trails) {
-    point(t.x, t.y);
+  for (let i = 0; i < trails.length; i++) {
+    let hue = (frameCount + i * 10) % 360;
+    let alpha = map(millis() - trails[i].time, 0, 500, 200, 0);
+    stroke(hue, 100, 100, alpha);
+    strokeWeight(10);
+    point(trails[i].x, trails[i].y);
   }
 }
