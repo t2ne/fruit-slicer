@@ -24,6 +24,8 @@ let logoImage;
 let upheavalFont;
 let backArrow;
 
+let cereja, kiwi, laranja, manga, melancia, morango, pera;
+
 let bgMusic;
 let fruitDropSound;
 let fruitGrabSound;
@@ -34,9 +36,9 @@ let gameMusic;
 let gameOverSound;
 let gameWinSound;
 
-let difficulty = "Médio";
-let musicVolume = 0.5;
-let sfxVolume = 0.5;
+let difficulty;
+let musicVolume;
+let sfxVolume;
 
 function preload() {
   handPose = ml5.handPose({ flipped: true });
@@ -46,6 +48,14 @@ function preload() {
     logoImage = loadImage("assets/icon/logo.png");
     backArrow = loadImage("assets/imgs/back_arrow.png");
     upheavalFont = loadFont("assets/font/upheavtt.ttf");
+
+    cereja = loadImage("assets/imgs/fruits/cereja.png");
+    kiwi = loadImage("assets/imgs/fruits/kiwi.png");
+    laranja = loadImage("assets/imgs/fruits/laranja.png");
+    manga = loadImage("assets/imgs/fruits/manga.png");
+    melancia = loadImage("assets/imgs/fruits/melancia.png");
+    morango = loadImage("assets/imgs/fruits/morango.png");
+    pera = loadImage("assets/imgs/fruits/pera.png");
 
     if (typeof p5.prototype.loadSound === "function") {
       bgMusic = loadSound(
