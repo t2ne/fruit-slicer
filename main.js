@@ -1167,8 +1167,8 @@ function drawTrails() {
   for (let i = 0; i < trails.length; i++) {
     let hue = (frameCount + i * 10) % 360;
     let alpha = map(millis() - trails[i].time, 0, 500, 200, 0);
-    stroke(hue, 100, 100, alpha);
+    stroke(hue, 100, 100, alpha); // cor e transparência do trail
     strokeWeight(10);
-    point(trails[i].x, trails[i].y);
+    point(trails[i].x, trails[i].y); // desenha um ponto na posição do rastro
   }
 }
