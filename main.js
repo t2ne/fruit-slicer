@@ -1004,7 +1004,8 @@ function playGame() {
 }
 
 function handleHandDetection() {
-  if (hands.length > 0) { // Se houver mãos detectadas
+  if (hands.length > 0) {
+    // Se houver mãos detectadas
     for (let i = 0; i < hands.length; i++) {
       let hand = hands[i]; // Obtém a mão atual
       let handIndex = i; // Índice da mão
@@ -1013,9 +1014,11 @@ function handleHandDetection() {
 
       trails.push({ x: palm.x, y: palm.y, time: millis() }); // Adiciona um efeito de trilha (para vermos o percurso feito)
 
-      if (isClosed) { // Se a mão estiver fechada
+      if (isClosed) {
+        // Se a mão estiver fechada
         let alreadyHolding = false;
-        for (let fruit of fruits) { // Verifica se já está a segurar uma fruta
+        for (let fruit of fruits) {
+          // Verifica se já está a segurar uma fruta
           if (fruit.grabbed && fruit.grabbedBy === handIndex) {
             alreadyHolding = true;
             fruit.x = palm.x; // Mantém a fruta na palma
@@ -1024,9 +1027,13 @@ function handleHandDetection() {
           }
         }
 
-        if (!alreadyHolding) { // Se ainda não estiver a segurar nenhuma fruta
+        if (!alreadyHolding) {
+          // Se ainda não estiver a segurar nenhuma fruta
           for (let fruit of fruits) {
-            if (!fruit.grabbed && dist(palm.x, palm.y, fruit.x, fruit.y) < fruit.w) {
+            if (
+              !fruit.grabbed &&
+              dist(palm.x, palm.y, fruit.x, fruit.y) < fruit.w
+            ) {
               fruit.grabbed = true; // Marca a fruta como agarrada
               fruit.grabbedBy = handIndex;
               playSoundSafe(fruitGrabSound); // Toca o som de grab
@@ -1034,13 +1041,17 @@ function handleHandDetection() {
             }
           }
         }
-      } else { // Se a mão estiver aberta (a soltar a fruta)
+      } else {
+        // Se a mão estiver aberta (a soltar a fruta)
         for (let fruit of fruits) {
           if (fruit.grabbed && fruit.grabbedBy === handIndex) {
             if (dist(fruit.x, fruit.y, basket.x, basket.y) < basket.w * 0.6) {
-              counter++; // Aumenta a pontuação
-              playSoundSafe(fruitInBasketSound); // Toca o som da fruta no cesto
-              fruits.splice(fruits.indexOf(fruit), 1); // Remove a fruta do jogo
+              counter++;
+              playSoundSafe(fruitInBasketSound);
+              let fruitIndex = fruits.indexOf(fruit);
+              if (fruitIndex > -1) {
+                fruits.splice(fruitIndex, 1);
+              }
             } else {
               playSoundSafe(fruitDropSound); // Toca o som da fruta a cair
               fruit.grabbed = false;
@@ -1053,7 +1064,6 @@ function handleHandDetection() {
     }
   }
 }
-
 
 function drawPauseMenuScreen() {
   image(video, 0, 0);
