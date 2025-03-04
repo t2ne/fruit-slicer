@@ -19,7 +19,7 @@ let soundsLoaded = false;
 let gameJustEnded = false;
 let leaderboardWithDifficulty = [];
 
-let bgImage1;
+let bgImage;
 let logoImage;
 let upheavalFont;
 let backArrow;
