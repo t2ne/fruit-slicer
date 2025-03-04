@@ -19,7 +19,7 @@ let soundsLoaded = false;
 let gameJustEnded = false;
 let leaderboardWithDifficulty = [];
 
-let bgImage;
+let bgImage1;
 let logoImage;
 let upheavalFont;
 let backArrow;
@@ -44,7 +44,7 @@ function preload() {
   handPose = ml5.handPose({ flipped: true });
 
   try {
-    bgImage = loadImage("assets/imgs/bg.png");
+    bgImage = loadImage("assets/imgs/bg1.png");
     logoImage = loadImage("assets/imgs/logo.png");
     backArrow = loadImage("assets/imgs/back_arrow.png");
     upheavalFont = loadFont("assets/font/upheavtt.ttf");
